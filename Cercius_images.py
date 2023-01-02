@@ -1195,6 +1195,8 @@ def result() :
         if len(list(texte.split(",")))>1:
           pattern="(et)"
           result=re.search(pattern,texte)
+          pattern2="(ou)"
+          result2=re.search(pattern2,texte)
           if result:
               print("(et)!")
               texte = texte.replace(", ",".*")
@@ -1202,6 +1204,18 @@ def result() :
               texte = texte.replace(".*(et)","")
               texte = texte.replace(" (et)","")
               texte = texte.replace("(et)","")
+              regex = re.compile(texte)
+              for i in param :
+                      result = regex.search(str(i).lower())
+                      if result and i not in requête:
+                          requête.append(i)
+          elif result2 : 
+              print("(ou)!")
+              texte = texte.replace(", ","|")
+              texte = texte.replace(",","|")
+              texte = texte.replace("|(ou)","")
+              texte = texte.replace(" (ou)","")
+              texte = texte.replace("(ou)","")
               regex = re.compile(texte)
               for i in param :
                       result = regex.search(str(i).lower())
