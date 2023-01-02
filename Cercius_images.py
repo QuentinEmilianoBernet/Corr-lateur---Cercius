@@ -4,7 +4,7 @@ from string import Template
 import numpy as np
 import re
 
-dtf = pd.read_csv(r"C:\Users\quent\Documents\images_custom3.csv", dtype={"conservation_institution":"str","contributor":"str", "extent":"str", "ornamental_motif":"str", "incipit":"str"})
+dtf = pd.read_csv(r"C:\Users\uuuu\Documents\images.csv", dtype={"conservation_institution":"str","contributor":"str", "extent":"str", "ornamental_motif":"str", "incipit":"str"})
 
 #dtf = dtf.loc[dtf["place_type"]!="Localisation_inconnue"]
 dtf = dtf.loc[dtf["id"]!="False"]
