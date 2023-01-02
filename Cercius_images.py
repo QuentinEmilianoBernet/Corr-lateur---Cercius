@@ -1193,31 +1193,33 @@ def result() :
         texte = request.form["input"]
         requête=[]
         if len(list(texte.split(",")))>1:
-          texte = list(texte.split(","))
-          if texte[len(texte)-1]=="[and]" or texte[len(texte)-1]==" [and]" :
-            for e in texte :
+          pattern="(et)"
+          result=re.search(pattern,texte)
+          if result:
+              print("(et)!")
+              texte = texte.replace(", ",".*")
+              texte = texte.replace(",",".*")
+              texte = texte.replace(".*(et)","")
+              texte = texte.replace(" (et)","")
+              texte = texte.replace("(et)","")
+              regex = re.compile(texte)
               for i in param :
-                score=0
-                for key, value in i.items():
-                    pattern = e.lower().strip()
-                    regex = re.compile("^"+pattern+"$")
-                    result = regex.search(str(value).lower())
-                    if result :
-                        if key != i["title"] and value != i["title"] and key != i["label"] and value != i["label"] :
-                            score+=1
-                if score==(len(texte)-1) and i not in requête:
-                  requête.append(i)
+                      result = regex.search(str(i).lower())
+                      if result and i not in requête:
+                          requête.append(i)
           else :
+            texte = request.form["input"]
+            texte = list(texte.split(","))
             for e in texte :
               for i in param :
-                for key, value in i.items():
-                    pattern = e.lower().strip()
-                    regex = re.compile(pattern)
-                    result = regex.search(str(value).lower())
-                    if result :
-                        if key != i["title"] and value != i["title"] and key != i["label"] and value != i["label"] :
-                            if i not in requête :
-                                requête.append(i)
+                  for key, value in i.items():
+                      e = e.lower().strip()
+                      regex = re.compile(e)
+                      result = regex.search(str(value).lower())
+                      if result :
+                          if key != i["title"] and value != i["title"] and key != i["label"] and value != i["label"] :
+                              if i not in requête :
+                                  requête.append(i)
         else :
           for i in param :
               for key, value in i.items():
