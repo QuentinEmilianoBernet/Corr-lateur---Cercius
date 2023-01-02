@@ -1080,7 +1080,7 @@ def result() :
     
     b = "<div id='résultat'>Erreur de requête, entrez uniquement un nombre entre 1 et 190 ou un nom répertorié dans la base.</div>"
     a = render_template('result.html', contenu = b, titre = str(request.form["input"]))
-    df = pd.read_csv(r"C:\Users\quent\Documents\MDLN_1612.csv")
+    df = pd.read_csv(r"C:\Users\uuuu\Documents\mdln.csv")
     
     df = df.fillna(False)
     df["Nom"] = df["Nom"].replace("Verge","Vierge")
@@ -1127,7 +1127,7 @@ def result() :
 
     elif request.method == 'POST' and (request.form["input"].replace("VdH"," ")).isdigit() is True :
         valeur = int(request.form["input"])
-        df = pd.read_csv(r"C:\Users\quent\Documents\MDLN_1612.csv")
+        df = pd.read_csv(r"C:\Users\uuuu\Documents\mdln.csv")
         d = corrélateur(df, valeur)
         c = render_template('result2.html', script=netgraph_corrélations(df,valeur), contenu = d, titre = str(request.form["input"]))
         return c
@@ -1141,7 +1141,7 @@ def result2() :
     a = render_template('result.html', contenu = b)
     if request.method == 'POST' and request.form["input"].isdigit() is True :
         valeur = int(str(request.form['input']))
-        df = pd.read_csv(r"C:\Users\quent\Documents\MDLN_1612.csv")
+        df = pd.read_csv(r"C:\Users\uuuu\Documents\mdln.csv")
 
         for a in range(len(df)) :
             for name, value in df.items() :
@@ -1168,7 +1168,7 @@ def ${Idx}():
 for i in range(190) :
     
     x+=1
-    df = pd.read_csv(r"C:\Users\quent\Documents\MDLN_1612.csv")
+    df = pd.read_csv(r"C:\Users\uuuu\Documents\mdln.csv")
     Id = df["Cotation"].fillna("Non indexée")
     exec(template.substitute(Idx=Id[x]))
 
