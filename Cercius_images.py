@@ -4,7 +4,7 @@ from string import Template
 import numpy as np
 import re
 
-dtf = pd.read_csv(r"C:\Users\uuuu\Documents\images.csv", dtype={"conservation_institution":"str","contributor":"str", "extent":"str", "ornamental_motif":"str", "incipit":"str"})
+dtf = pd.read_csv(r"C:\Users\quent\Documents\images_custom4.csv", dtype={"conservation_institution":"str","contributor":"str", "extent":"str", "ornamental_motif":"str", "incipit":"str"})
 
 #dtf = dtf.loc[dtf["place_type"]!="Localisation_inconnue"]
 dtf = dtf.loc[dtf["id"]!="False"]
@@ -38,19 +38,26 @@ for i in range(len(dtf)) :
                         e = e.replace("saint","saint ")
                     descri.append(e)
 
-    if i < len(dtf)-1 :
-      descripteurs(dtf["timel_nature_place"][i+1])
+    if i >= 59592 and i < len(dtf)-1:
       descripteurs(dtf["timel_object_architecture"][i+1])
       descripteurs(dtf["timel_character"][i+1])
       descripteurs(dtf["timel_subject"][i+1])
-      descripteurs(dtf["timel_subject"][i+1])
+      descripteurs(dtf["timel_thema"][i+1])
+
+    elif i < 59592 :
+      descripteurs(dtf["timel_nature_place"][i])
+      descripteurs(dtf["timel_object_architecture"][i])
+      descripteurs(dtf["timel_character"][i])
+      descripteurs(dtf["timel_subject"][i])
+      descripteurs(dtf["timel_thema"][i])
     
     else :
       descri = []
 
     descri = list(set(descri))
+    descri.sort()
 
-    if dtf["lat"][i] != "False" :
+    if dtf["lat"][i] != "False" and len(descri)>=1:
         i = {
     "id":(dtf["id"][i].replace(" ","_")).replace(".","_"),
     "lat":float(dtf["lat"][i]),
@@ -70,8 +77,9 @@ for i in range(len(dtf)) :
     "Quotient":"",
     "index":int(i),
     }
+        base_images.append(i)
 
-    else :
+    elif len(descri)>=1 :
         i = {
     "id":(dtf["id"][i].replace(" ","_")).replace(".","_"),
     "lat":dtf["lat"][i],
@@ -91,9 +99,9 @@ for i in range(len(dtf)) :
     "Quotient":"",
     "index":int(i),
     }
+        base_images.append(i)
 
-    base_images.append(i)
-
+print (len(base_images))
 t = len(dtf)
 
 def carto(corrélations) :
@@ -103,7 +111,7 @@ def carto(corrélations) :
         e = i["région"]
         u = i["lon"]
         if e != "Localisation inconnue" or e == "Catalunya" :
-            if u != "False" :
+            if u != "False" and i["date_deb"]!=0:
                 carto_dict.append(i)
 
     script='''
@@ -153,6 +161,19 @@ def carto(corrélations) :
 
         var points ='''+str(carto_dict)+'''
         var  heat_points = []
+
+        points.sort((a, b) => {
+            return a.date_deb - b.date_deb;
+        });
+
+        var date_deb = parseInt(points[0].date_deb);
+
+        points.sort((a, b) => {
+            return b.date_fin - a.date_fin;
+        });
+
+        var date_fin = parseInt(points[0].date_fin);
+
         for(i in points) {
         var Origin = (points[i].origin).split(","),	//value searched
             lat = points[i].lat,	
@@ -162,12 +183,38 @@ def carto(corrélations) :
             artiste = (points[i].contributor).split(",")
             ville = (points[i].place).split(",");
 
+        heat_points.push([lat,lon,0.2 ])};
 
-        heat_points.push([lat,lon,0.3])};
+        var heat = L.heatLayer(heat_points, {gradient:{0.2: '#2D3053', 0.5: '#9B93BD', 0.8: 'beige', 1:'blanchedalmond'}, minOpacity:0.75, blur:35, radius: 25}).addTo(map);
+                
+        var slider = document.getElementById('slider');
+        
+        
+           noUiSlider.create(slider, {
+                start: [date_deb,date_fin],
+                color: 'midnightblue',
+                behaviour:'drag-slide',
+                connect: true,
+                tooltips: [wNumb({decimals:0}),wNumb({decimals:0})],
+                step:5,
+                range: {
+                    'min': date_deb,
+                    'max': date_fin,
+                }
+            }).on('slide', function(e) {
+              console.log(e)
 
-        var heat = L.heatLayer(heat_points, {gradient:{0.2: '#2D3053', 0.7: '#9B93BD', 1: 'beige'}, minOpacity:0.75, blur:35, radius: 30}).addTo(map);
-                
-                
+              heat_points = []
+              
+              for (i in points) {
+
+              if(points[i].date_deb>=parseFloat(e[0])&&points[i].date_fin<=parseFloat(e[1])) {
+                  heat_points.push([points[i].lat,points[i].lon,0.3]);}
+              }
+              heat.setLatLngs(heat_points);
+
+            
+            });
                 
                 '''
 
@@ -224,21 +271,17 @@ def carto_corrélations(corrélations, input) :
                                 corrélations.append(y)
 
 
-                        elif int(obj["date_deb"])<int(y["date_deb"]) and obj["date_deb"] !=0:
-                            if int(y["date_deb"])-int(obj["date_deb"]) <= 80 :
+                        elif int(obj["date_deb"])<int(y["date_deb"]) :
+                            if int(y["date_deb"])-int(obj["date_deb"]) <= 150 :
                                 y["Quotient"]=float(a-(int(y["date_deb"])-int(obj["date_deb"]))*0.2)
                                 corrélations.append(y)
 
 
-                        elif int(y["date_deb"])<int(obj["date_deb"]) and int(y["date_deb"])!=0:
-                            if int(obj["date_deb"])-int(y["date_deb"]) <= 80 :
+                        elif int(y["date_deb"])<int(obj["date_deb"]) :
+                            if int(obj["date_deb"])-int(y["date_deb"]) <= 150 :
                                 y["Quotient"]=float(a-(int(obj["date_deb"])-int(y["date_deb"]))*0.2)
                                 corrélations.append(y)
 
-
-                        else :
-                                
-                                y["Quotient"]=float(a-100)
                 
     a=0
         
@@ -254,8 +297,10 @@ def carto_corrélations(corrélations, input) :
     carto_dict = []
 
     for i in corrélations:
-        if i["région"] != "Localisation inconnue" or i["région"] == "Catalunya" :
-            if i["lon"] != "False":
+        if i["région"] != "Localisation inconnue" :
+            if i["lon"] != "False" and i["date_deb"]!=0 and obj["date_deb"]!=0:
+                carto_dict.append(i)
+            elif obj["date_deb"]==0 and i["lon"] != "False" :
                 carto_dict.append(i)
 
     script='''
@@ -276,9 +321,15 @@ def carto_corrélations(corrélations, input) :
                 iconAnchor: [50, 50]
             });
 
+    if ("'''+str(obj["lat"])+'''" == "False" || "'''+str(obj["lon"])+'''" == "False" ) {
+      var center_lat = 43.950001 ; var center_lon = 4.81667;}
+
+    else {
+      var center_lat = '''+str(obj["lat"])+''' ; var center_lon = '''+str(obj["lon"])+''';}
+
     var map = L.map('map', {
     zoom: 6,
-    center : [43.950001, 4.81667]});
+    center : [center_lat, center_lon]});
 
     L.tileLayer(
             "https://api.mapbox.com/styles/v1/quentinbernet/cla6lh9e1000714mt0kv7e87z/tiles/256/{z}/{x}/{y}?access_token=pk.eyJ1IjoicXVlbnRpbmJlcm5ldCIsImEiOiJja3ltenMxb2MwN2s3MnBuOXM4cGJma3d5In0.fPSmSgvw8iuMJ7eXobdtAw",
@@ -305,6 +356,21 @@ def carto_corrélations(corrélations, input) :
 
         var points ='''+str(carto_dict)+'''
         var  heat_points = []
+
+        if (points.length!=0) {
+        points.sort((a, b) => {
+            return a.date_deb - b.date_deb;
+        });
+        var date_deb = parseInt(points[0].date_deb);
+
+        points.sort((a, b) => {
+            return b.date_fin - a.date_fin;
+        });
+
+        var date_fin = parseInt(points[0].date_fin);}
+
+        else {var date_deb = 0;var date_fin=1}
+
         for(i in points) {
         var Origin = (points[i].origin).split(","),	//value searched
             lat = points[i].lat,	
@@ -315,12 +381,41 @@ def carto_corrélations(corrélations, input) :
             ville = (points[i].place).split(",");
 
 
-        heat_points.push([lat,lon,0.3])};
+        heat_points.push([lat,lon,0.2 ])};
 
-        var heat = L.heatLayer(heat_points, {gradient:{0.2: '#2D3053', 0.7: '#9B93BD', 1: 'beige'}, minOpacity:0.75, blur:35, radius: 30}).addTo(map);
+        var heat = L.heatLayer(heat_points, {gradient:{0.2: '#2D3053', 0.5: '#9B93BD', 0.8: 'beige', 1:'blanchedalmond'}, minOpacity:0.75, blur:35, radius: 25}).addTo(map);
 
-        var circle = new L.circleMarker (['''+str(input["lat"])+","+str(input["lon"])+'''], {label:label, icon:blur2, opacity: 0.4, radius:10, fillColor:'none', color:'blanchedalmond'});
+        var circle = new L.circleMarker (['''+str(input["lat"])+","+str(input["lon"])+'''], {label:label, icon:blur2, opacity: 0.9, weight: 1.8, radius:10, fillColor:'none', color:'blanchedalmond'});
             circle.addTo(map);
+      
+        var slider = document.getElementById('slider');
+        
+        
+           noUiSlider.create(slider, {
+                start: [date_deb,date_fin],
+                color: 'midnightblue',
+                behaviour:'drag-slide',
+                connect: true,
+                tooltips: [wNumb({decimals:0}),wNumb({decimals:0})],
+                step:5,
+                range: {
+                    'min': date_deb,
+                    'max': date_fin,
+                }
+            }).on('slide', function(e) {
+              console.log(e)
+
+              heat_points = []
+              
+              for (i in points) {
+
+              if(points[i].date_deb>=parseFloat(e[0])&&points[i].date_fin<=parseFloat(e[1])) {
+                  heat_points.push([points[i].lat,points[i].lon,0.3]);}
+              }
+              heat.setLatLngs(heat_points);
+
+            
+            });
         
         '''
 
@@ -380,21 +475,17 @@ def corrélateur(base_images,input) :
                                 corrélations.append(y)
 
 
-                        elif int(obj["date_deb"])<int(y["date_deb"]) and obj["date_deb"] !=0:
-                            if int(y["date_deb"])-int(obj["date_deb"]) <= 80 :
+                        elif int(obj["date_deb"])<int(y["date_deb"]) :
+                            if int(y["date_deb"])-int(obj["date_deb"]) <= 150 :
                                 y["Quotient"]=float(a-(int(y["date_deb"])-int(obj["date_deb"]))*0.2)
                                 corrélations.append(y)
 
 
-                        elif int(y["date_deb"])<int(obj["date_deb"]) and int(y["date_deb"])!=0:
-                            if int(obj["date_deb"])-int(y["date_deb"]) <= 80 :
+                        elif int(y["date_deb"])<int(obj["date_deb"]) :
+                            if int(obj["date_deb"])-int(y["date_deb"]) <= 150 :
                                 y["Quotient"]=float(a-(int(obj["date_deb"])-int(y["date_deb"]))*0.2)
                                 corrélations.append(y)
 
-
-                        else :
-                                
-                                y["Quotient"]=float(a-100)
 
                         print(y["Quotient"], end=", ")
 
@@ -413,25 +504,25 @@ def corrélateur(base_images,input) :
         if obj["id"] is not False :
 
             a = '<div id="résultat"><div id="map"></div><div id="résultat1"><img src="''" height="auto" width="350px"><br><br>'
-            a += "Vous avez choisi "+str(obj["id"])+", "+str(obj["title"])+ " fol."+str(obj["folio"])+", "+" par "+str(obj["contributor"])+", "+str(obj["date"])+', '+str(obj["place"]).replace("False", "origine exacte inconnue")+'. </div><div id="netgraph"><div id="loadingScreen">Chargement...</div><div id="mynetwork"></div></div></div><br><br>'
+            a += "Vous avez choisi "+str(obj["id"])+", "+str(obj["title"])+ " ("+str(obj["manuscrit"])+") fol."+str(obj["folio"])+", "+" par "+str(obj["contributor"])+", "+str(obj["date"])+', '+str(obj["place"]).replace("False", "origine exacte inconnue")+'. </div><div id="netgraph"><div id="loadingScreen">Chargement...</div><div id="mynetwork"></div></div></div><br><br>'
         
         else :
             a = '<div id="résultat"><div id="map"></div><div id="résultat1">'
-            a += 'Vous avez choisi '+str(obj["id"])+", "+str(obj["title"])+ " fol."+str(obj["folio"])+", "+' par '+str(obj["contributor"])+', '+str(obj["date"])+' (Pas de reproduction), '+str(obj["place"]).replace("False", "origine exacte inconnue")+'. </div><div id="netgraph"><div id="loadingScreen">Chargement...</div><div id="mynetwork"></div></div></div><br><br>'
+            a += 'Vous avez choisi '+str(obj["id"])+", "+str(obj["title"])+ " ("+str(obj["manuscrit"])+") fol."+str(obj["folio"])+", "+' par '+str(obj["contributor"])+', '+str(obj["date"])+' (Pas de reproduction), '+str(obj["place"]).replace("False", "origine exacte inconnue")+'. </div><div id="netgraph"><div id="loadingScreen">Chargement...</div><div id="mynetwork"></div></div></div><br><br>'
         z = -1
-        if len(corrélations)<= 35 :
+        if len(corrélations)<= 120 :
             longueur = len(corrélations)
         else :
-            longueur = 35
+            longueur = 120
         a += '<div id="résultats">'
         for i in range(longueur) :
             z+=1
-            a += '<a id="compart" href="http://127.0.0.1:5000/item_'+corrélations[z]["id"]+'"> <img id="résultat_indiv" src="'+corrélations[z]["id"]+'" height="410vh" width="auto"><br><div id="cartel"> Proche de '+corrélations[z]["id"]+" : "+corrélations[z]["label"]+"</div></a><br>"+'''
+            if i % 4 == 0 and i!=0:
+                    a+='</div><br><div id="résultats">'
+            a += '<a id="compart" href="http://127.0.0.1:5000/item_'+corrélations[z]["id"]+'"> <img id="résultat_indiv" src="'+corrélations[z]["id"]+'" height="400vh" width="auto"><br><div id="cartel"> Proche de '+corrélations[z]["id"]+" : "+corrélations[z]["label"]+"</div></a><br>"+'''
     '''
             #if z == 5 or z == 10 or z == 15 or z == 20:
             #    a += '</div><br><div id="résultats">'
-            if i % 4 == 0 :
-                    a+='</div><br><div id="résultats">'
         a += "</div>"
         return a
     b = imprime()
@@ -471,8 +562,7 @@ const input = "'''+input+'''"
     graph_dict = []
 
     for i in corrélations:
-        if i["région"] != "Localisation inconnue" or i["région"] == "Catalunya" :
-            if i["place"] != "False":
+        if i["région"] != "False" and i["place"] != "False":
                 graph_dict.append(i)
 
     villes=[]
@@ -602,8 +692,8 @@ function calculateNodePositions(nodes, villes, artistes, edges) {
     },
     edges: {
       color:{highlight:'white'},
-      width: 0.35,
-      length:3,
+      width: 0.20,
+      length:5,
       smooth: {
           enabled:true,
           roundness:0.75,
@@ -643,7 +733,7 @@ for (i in points) {
                   group: 1,
                   color:{highlight:'crimson', hover:'crimson', border: 'beige', background:'darkpurple'},
               
-                  mass: 5,
+                  mass: 8,
                   borderWidth: 1,
                   x: 1,
                   y: 1,
@@ -668,13 +758,13 @@ nodes.forEach(node => {
     nodes.forEach(node2 => {
     var quotient_list = 0
     for (const o of node2["descri"]) {
-        if (node["descri"].includes(o)&&node!=node2&&node["manuscrit"]!=node2["manuscrit"]) {quotient_list+=1}
+        if (node["descri"].length>1&&node["descri"].includes(o)&&node!=node2&&node["manuscrit"]!=node2["manuscrit"]) {quotient_list+=1}
     }if (node["descri"].length>node2["descri"].length){
       var limite = node["descri"].length*0.75
     } else {
       var limite = node2["descri"].length*0.75
     }
-    if (quotient_list>1&&quotient_list>limite&&analysednodes.includes(String(node2["id"]+node["id"]))==false){edges.add({from : node["id"], to: node2["id"], color:'#5353CC'});analysednodes.push(String(node["id"]+node2["id"]))}
+    if (limite>1&&quotient_list>limite&&analysednodes.includes(String(node2["id"]+node["id"]))==false){edges.add({from : node["id"], to: node2["id"], length:20, color:'#5353CC'});analysednodes.push(String(node["id"]+node2["id"]))}
     })
 })
 
@@ -810,21 +900,17 @@ def netgraph_corrélations(corrélations,input) :
                                 corrélations.append(y)
 
 
-                        elif int(obj["date_deb"])<int(y["date_deb"]) and obj["date_deb"] !=0:
-                            if int(y["date_deb"])-int(obj["date_deb"]) <= 80 :
+                        elif int(obj["date_deb"])<int(y["date_deb"]) :
+                            if int(y["date_deb"])-int(obj["date_deb"]) <= 150 :
                                 y["Quotient"]=float(a-(int(y["date_deb"])-int(obj["date_deb"]))*0.2)
                                 corrélations.append(y)
 
 
-                        elif int(y["date_deb"])<int(obj["date_deb"]) and int(y["date_deb"])!=0:
-                            if int(obj["date_deb"])-int(y["date_deb"]) <= 80 :
+                        elif int(y["date_deb"])<int(obj["date_deb"]) :
+                            if int(obj["date_deb"])-int(y["date_deb"]) <= 150 :
                                 y["Quotient"]=float(a-(int(obj["date_deb"])-int(y["date_deb"]))*0.2)
                                 corrélations.append(y)
 
-
-                        else :
-                                
-                                y["Quotient"]=float(a-100)
                 
     a=0
 
@@ -887,24 +973,25 @@ const nodes = new vis.DataSet();
 var points='''+str(graph_dict)+'''
 
   nodes.add({
-    id: input,
+    id: "'''+str(obj["id"])+'''",
     label: input,
     title: "'''+str(obj["id"])+", "+ str(i["contributor"])+", "+str(i["title"])+", "+str(i["date"])+"."+'''",
     ville:"'''+str(obj["place"])+'''",
     artiste:"'''+str(obj["contributor"])+'''",
     origin:"'''+str(obj["origin"])+'''",
-    descri:"'''+str(obj["descripteurs"])+'''",
+    descri:'''+str(obj["descripteurs"])+''',
     manuscrit:"'''+str(obj["manuscrit"])+'''",
-    value: 9,
+    value: 3,
     fixed:true,
     font:{
             size:30,
+            color: 'blanchedalmond',
         },
     group: 1,
-    color:{highlight:'grey', border: 'indigo', background:'black', edges:'indigo'},
+    color:{highlight:'grey', border: 'blanchedalmond', background:'black', edges:'blanchedalmond'},
 
     mass: 10,
-    borderWidth: 2.5,
+    borderWidth: 1.8,
     x: 300,
     y: 300,
   },)
@@ -1015,8 +1102,8 @@ function calculateNodePositions(nodes, villes, artistes, edges) {
     },
     edges: {
       color:{highlight:'white'},
-      width: 0.35,
-      length:3,
+      width: 0.20,
+      length:5,
       smooth: {
           enabled:true,
           roundness:0.75,
@@ -1057,7 +1144,7 @@ if (id!=input){
                   group: 1,
                   color:{highlight:'crimson', hover:'crimson', border: 'beige', background:'darkpurple'},
               
-                  mass: 5,
+                  mass: 15,
                   borderWidth: 1,
                   x: 1,
                   y: 1,
@@ -1082,13 +1169,13 @@ nodes.forEach(node => {
     nodes.forEach(node2 => {
     var quotient_list = 0
     for (const o of node2["descri"]) {
-        if (node["descri"].includes(o)&&node!=node2&&node["manuscrit"]!=node2["manuscrit"]) {quotient_list+=1}
+        if (node["descri"].length>=2&&node["descri"].includes(o)&&node!=node2&&node["manuscrit"]!=node2["manuscrit"]) {quotient_list+=1}
     }if (node["descri"].length>node2["descri"].length){
       var limite = node["descri"].length*0.75
     } else {
       var limite = node2["descri"].length*0.75
     }
-    if (quotient_list>1&&quotient_list>limite&&analysednodes.includes(String(node2["id"]+node["id"]+String(limite)))==false){edges.add({from : node["id"], to: node2["id"], color:'#5353CC'});analysednodes.push(String(node["id"]+node2["id"]+String(limite)))}
+    if (limite>1&&quotient_list>limite&&analysednodes.includes(String(node2["id"]+node["id"]))==false){edges.add({from : node["id"], to: node2["id"], length:20, color:'#5353CC'});analysednodes.push(String(node["id"]+node2["id"]))}
     })
 })
 
@@ -1192,48 +1279,103 @@ def result() :
     def requéter(param) :
         texte = request.form["input"]
         requête=[]
+        
+        if len(list(texte.split(",")))>1:
+          liste = list(texte.split(","))
+          if liste[len(liste)-1].replace(" ","").isdigit():
+              limite = int(liste[len(liste)-1].replace(" ",""))
+              texte = re.sub(", \d*$", "", texte)
+              texte = re.sub(",\d*$", "", texte)
+              param2=[]
+              print(texte)
+              for i in param :
+                if len(i["descripteurs"])>=limite:
+                  param2.append(i)
+              param=param2
+
         if len(list(texte.split(",")))>1:
           pattern="(et)"
           result=re.search(pattern,texte)
           pattern2="(ou)"
           result2=re.search(pattern2,texte)
-          if result:
-              print("(et)!")
-              texte = texte.replace(", ",".*")
-              texte = texte.replace(",",".*")
-              texte = texte.replace(".*(et)","")
-              texte = texte.replace(" (et)","")
-              texte = texte.replace("(et)","")
-              regex = re.compile(texte)
-              for i in param :
-                      result = regex.search(str(i).lower())
-                      if result and i not in requête:
-                          requête.append(i)
+          pattern3="(dates*)"
+          result3=re.search(pattern3,texte)
+
+          if result :
+                print("(et)!")
+                texte = texte.replace(", ",".*")
+                texte = texte.replace(",",".*")
+                texte = texte.replace(".*(et)","")
+                texte = texte.replace(" (et)","")
+                texte = texte.replace("(et)","")
+                print(texte)
+                regex = re.compile(texte)
+                for i in param :
+                        result = regex.search(str(i).lower())
+                        if result and i not in requête:
+                            requête.append(i)
           elif result2 : 
-              print("(ou)!")
-              texte = texte.replace(", ","|")
-              texte = texte.replace(",","|")
-              texte = texte.replace("|(ou)","")
-              texte = texte.replace(" (ou)","")
-              texte = texte.replace("(ou)","")
-              regex = re.compile(texte)
-              for i in param :
-                      result = regex.search(str(i).lower())
-                      if result and i not in requête:
-                          requête.append(i)
+                print("(ou)!")
+                print(texte)
+                texte = texte.replace(", ","|")
+                texte = texte.replace(",","|")
+                texte = texte.replace("|(ou)","")
+                texte = texte.replace(" (ou)","")
+                texte = texte.replace("(ou)","")
+                regex = re.compile(texte)
+                for i in param :
+                        result = regex.search(str(i).lower())
+                        if result and i not in requête:
+                            requête.append(i)
+          elif result3 :
+                print("(dates)!")
+                print(texte)
+                dates=list(texte.replace("(","").split(","))[len(texte.split(","))-1]
+                dates=list(dates.strip().replace(")","").split(" "))[1]
+                dates=list(dates.split("-"))
+                print(dates)
+                texte = re.sub(", (dates*)", "", texte)
+                texte = re.sub(",(dates*)", "", texte)
+                texte = texte.replace(", ","|")
+                texte = texte.replace(",","|")
+                regex = re.compile(texte)
+                for i in param :
+                        result = regex.search(str(i).lower())
+                        if result and i not in requête and i["date_deb"]>=int(dates[0].strip()) and i["date_fin"]<=int(dates[1].strip()):
+                            requête.append(i)
+          elif result and result3 :
+                print("(dates)!")
+                print(texte)
+                dates=list(texte.replace("(","").split(","))[len(texte.split(","))-1]
+                dates=list(dates.strip().replace(")","").split(" "))[1]
+                dates=list(dates.split("-"))
+                print(dates)
+                texte = re.sub(", (dates*)", "", texte)
+                texte = re.sub(",(dates*)", "", texte)
+                texte = texte.replace(", ",".*")
+                texte = texte.replace(",",".*")
+                texte = texte.replace(".*(et)","")
+                texte = texte.replace(" (et)","")
+                texte = texte.replace("(et)","")
+                regex = re.compile(texte)
+                for i in param :
+                        result = regex.search(str(i).lower())
+                        if result and i not in requête and i["date_deb"]>=int(dates[0].strip()) and i["date_fin"]<=int(dates[1].strip()):
+                            requête.append(i)
           else :
-            texte = request.form["input"]
-            texte = list(texte.split(","))
-            for e in texte :
-              for i in param :
-                  for key, value in i.items():
-                      e = e.lower().strip()
-                      regex = re.compile(e)
-                      result = regex.search(str(value).lower())
-                      if result :
-                          if key != i["title"] and value != i["title"] and key != i["label"] and value != i["label"] :
-                              if i not in requête :
-                                  requête.append(i)
+              print(texte)
+              texte=list(texte.split(","))
+              for e in texte :
+                for i in param :
+                    for key, value in i.items():
+                        e = e.lower().strip()
+                        regex = re.compile(e)
+                        result = regex.search(str(value).lower())
+                        if result :
+                            #if key != i["title"] and value != i["title"] and key != i["label"] and value != i["label"] :
+                                if i not in requête :
+                                    requête.append(i)
+          
         else :
           for i in param :
               for key, value in i.items():
@@ -1241,7 +1383,7 @@ def result() :
                   regex = re.compile(pattern)
                   result = regex.search(str(value).lower())
                   if result :
-                      if key != i["title"] and value != i["title"] and key != i["label"] and value != i["label"] :
+                      #if key != i["title"] and value != i["title"] and key != i["label"] and value != i["label"] :
                           if i not in requête :
                               requête.append(i)
 
@@ -1271,12 +1413,23 @@ def result() :
         if len(corrélations)>=1:
             d='<div id="résultat">'+'''</br><div id="map"></div><div id="netgraph"><div id="loadingScreen">Chargement...</div><div id="mynetwork"></div></div></div><br><h2>'''+texte+", "+ str(len(corrélations))+" correspondances."'</h2><div id="résultats">'
 
-            for i in range(len(corrélations)) :
-                d+='<a id="compart" href="http://127.0.0.1:5000/item_'+str(corrélations[i]["id"])+'"><img id="résultat_indiv" src="'+str(corrélations[i]["title"])+'" height="410vh" width="auto"><br><div id="cartel">'+str(corrélations[i]["contributor"])+', '+str(corrélations[i]["title"])+" fol."+str(corrélations[i]["folio"])+', '+str(corrélations[i]["date"])+", "+str(corrélations[i]["place"])+".</div></a>"+'''
-        '''
-                if i % 4 == 0 :
-                    d+='</div><br><div id="résultats">'
-            d+='</div>'
+            if len(corrélations)<=360:
+              for i in range(len(corrélations)) :
+
+                  if i % 4 == 0 and i!=0:
+                      d+='</div><br><div id="résultats">'
+                  d+='<a id="compart" href="http://127.0.0.1:5000/item_'+str(corrélations[i]["id"])+'"><img id="résultat_indiv" src="'+str(corrélations[i]["title"])+'" height="400vh" width="auto"><br><div id="cartel">'+str(corrélations[i]["id"])+' : '+str(corrélations[i]["contributor"])+', '+str(corrélations[i]["manuscrit"])+" ("+str(corrélations[i]["title"])+")"+" fol."+str(corrélations[i]["folio"])+', '+str(corrélations[i]["date"])+", "+str(corrélations[i]["place"])+".</div></a>"+'''
+          '''
+              d+='</div>'
+
+            else :
+              for i in range(360) :
+
+                  if i % 4 == 0 and i!=0:
+                      d+='</div><br><div id="résultats">'
+                  d+='<a id="compart" href="http://127.0.0.1:5000/item_'+str(corrélations[i]["id"])+'"><img id="résultat_indiv" src="'+str(corrélations[i]["title"])+'" height="400vh" width="auto"><br><div id="cartel">'+str(corrélations[i]["id"])+' : '+str(corrélations[i]["contributor"])+', '+str(corrélations[i]["manuscrit"])+" ("+str(corrélations[i]["title"])+")"+" fol."+str(corrélations[i]["folio"])+', '+str(corrélations[i]["date"])+", "+str(corrélations[i]["place"])+".</div></a>"+'''
+          '''
+              d+='</div>'
 
             return render_template('result.html', script=netgraph(corrélations), contenu = d, titre = str(request.form["input"]))
 
