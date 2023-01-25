@@ -1,0 +1,154 @@
+def date_sec(date) :
+    date2=0
+    date=str(date).replace("Entre ", "").replace(" et ", "-")
+
+    est_un_siècle = re.search("siècle",date)
+    sont_des_siècles = re.search("siècles",date)
+
+    date_deb=df["date_deb"][i]
+    date_fin=df["date_fin"][i]
+
+    fraction1 = re.search("1er quart",date)
+    fraction2 = re.search("2e quart",date)
+    fraction3 = re.search("3e quart",date)
+    fraction4 = re.search("4e quart",date)
+    fraction5 = re.search("milieu",date)
+    fraction6 = re.search("1ère moitié",date)
+    fraction7 = re.search("2e moitié",date)
+
+    début = re.search("début", date)
+    fin = re.search("fin", date)
+
+    if est_un_siècle and sont_des_siècles is None :
+        date2 = list(date.split(" "))[0]
+        if date2 == "VIIe" :
+            date2 = 600
+
+        elif date2 == "VIIIe" or date2 == "IIXe":
+            date2 = 700
+
+        elif date2 == "IXe" :
+            date2 = 800
+
+        elif date2 == "Xe" :
+            date2 = 900
+
+        elif date2 == "XIe":
+            date2 = 1000
+
+        elif date2 == "XIIe":
+            date2 = 1100
+
+        elif date2 == "XIIIe":
+            date2 = 1200
+
+        elif date2 == "XIVe":
+            date2 = 1300
+
+        elif date2 == "XVe":
+            date2 = 1400
+
+        elif date2 == "XVIe":
+            date2 = 1500
+
+        if str(date2).isdigit():
+            date_deb=date2
+            date_fin=date2+99
+
+            if fraction1 :
+                date_deb = date2
+                date_fin = date2+25
+
+            elif fraction2 :
+                date_deb = date2+25
+                date_fin = date2+50
+
+            elif fraction3 :
+                date_deb = date2+50
+                date_fin = date2+75
+
+            elif fraction4 :
+                date_deb = date2+75
+                date_fin = date2+99
+
+            elif fraction5 :
+                date_deb = date2+40
+                date_fin = date2+60
+
+            elif fraction6 :
+                date_deb = date2
+                date_fin = date2+50
+
+            elif fraction7 :
+                date_deb = date2+50
+                date_fin = date2+99
+
+            elif début :
+                date_deb = date2
+                date_fin = date2+40
+
+            elif fin :
+                date_deb = date2+60
+                date_fin = date2+99
+
+        df["date_deb"][i]=date_deb
+        df["date_fin"][i]=date_fin
+
+    elif re.search("ca.",date) and len(list(date.split("-")))==1:
+        date2 = int(list(date.split(" "))[1])
+        date_deb = date2-6
+        date_fin = date2+6
+        df["date_deb"][i]=date_deb
+        df["date_fin"][i]=date_fin
+
+    elif re.search("-",date):
+        if re.search("siècles",date):
+            date=date.replace(" siècles","")
+            date=list(date.split("-"))
+            result=[]
+            for a in date :
+                if a == "VIIe" :
+                    a = 600
+
+                elif a == "VIIIe" or a == "IIXe":
+                    a = 700
+
+                elif a == "IXe" :
+                    a = 800
+
+                elif a == "Xe" :
+                    a = 900
+
+                elif a == "XIe":
+                    a = 1000
+
+                elif a == "XIIe":
+                    a = 1100
+
+                elif a == "XIIIe":
+                    a = 1200
+
+                elif a == "XIVe":
+                    a = 1300
+
+                elif a == "XVe":
+                    a = 1400
+
+                elif a == "XVIe":
+                    a = 1500
+
+                result.append(a)
+            date_deb=result[0]
+            date_fin=result[1]+99
+        else:
+            date=date.replace("ca. ", "")
+            date=list(date.split("-"))
+            if date[0].isdigit() :
+                date_deb=int(date[0])
+                date_fin=int(date[1])
+        df["date_deb"][i]=date_deb
+        df["date_fin"][i]=date_fin
+
+    elif date.isdigit() :
+        df["date_deb"][i]=int(date)-3
+        df["date_fin"][i]=int(date)+3
