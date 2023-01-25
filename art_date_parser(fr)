@@ -14,6 +14,7 @@ def date_sec(date) :
     fraction4 = re.search("4e quart",date)
     fraction5 = re.search("milieu",date)
     fraction6 = re.search("1ère moitié",date)
+    fraction6_2 = re.search("1re moitié",date)
     fraction7 = re.search("2e moitié",date)
 
     début = re.search("début", date)
@@ -75,7 +76,7 @@ def date_sec(date) :
                 date_deb = date2+40
                 date_fin = date2+60
 
-            elif fraction6 :
+            elif fraction6 or fraction6_2:
                 date_deb = date2
                 date_fin = date2+50
 
