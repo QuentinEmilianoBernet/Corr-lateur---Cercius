@@ -1,0 +1,119 @@
+#How to make a request in large dataset, using parameters as operator, vacbulary, keywords and chronological limits
+
+def requeter(param) :
+        texte = request.form["input"]
+        requete=[]
+        
+        if len(list(texte.split(",")))>1:
+          liste = list(texte.split(","))
+          if liste[len(liste)-1].replace(" ","").isdigit():
+              limite = int(liste[len(liste)-1].replace(" ",""))
+              texte = re.sub(", \d*$", "", texte)
+              texte = re.sub(",\d*$", "", texte)
+              param2=[]
+              print(texte)
+              for i in param :
+                if i["index"]==3444:
+                  print(i)
+                if len(i["descripteurs"])>=limite:
+                  param2.append(i)
+              param=param2
+
+        if len(list(texte.split(",")))>1:
+          pattern="(et)"
+          result=re.search(pattern,texte)
+          pattern2="(ou)"
+          result2=re.search(pattern2,texte)
+          pattern3="(dates*)"
+          result3=re.search(pattern3,texte)
+
+          if result :
+                print("(et)!")
+                texte = texte.replace(", ","(.*)")
+                texte = texte.replace(",","(.*)")
+                texte = texte.replace("(.*)(et)","")
+                texte = texte.replace("(.*) (et)","")
+                texte = texte.replace(" (et)","")
+                texte = texte.replace("(et)","")
+                print(texte)
+                regex = re.compile(texte)
+                for i in param :
+                        result = regex.search(str(i).lower())
+                        if result and i not in requete:
+                            requete.append(i)
+          elif result2 : 
+                print("(ou)!")
+                print(texte)
+                texte = texte.replace(", ","|")
+                texte = texte.replace(",","|")
+                texte = texte.replace("|(ou)","")
+                texte = texte.replace(" (ou)","")
+                texte = texte.replace("(ou)","")
+                regex = re.compile(texte)
+                for i in param :
+                        result = regex.search(str(i).lower())
+                        if result and i not in requete:
+                            requete.append(i)
+          elif result3 :
+                print("(dates)!")
+                dates=list(texte.replace("(","").split(","))[len(texte.split(","))-1]
+                dates=list(dates.strip().replace(")","").split(" "))[1]
+                dates=list(dates.split("-"))
+                texte = list(texte.split(", (dates "))[0]
+                texte = texte.replace(", ","|")
+                texte = texte.replace(",","|")
+                print(texte)
+                print(dates)
+                regex = re.compile(texte)
+                for i in param :
+                        result = regex.search(str(i).lower())
+                        if result and i not in requete and i["date_deb"]>=int(dates[0].strip()) and i["date_fin"]<=int(dates[1].strip()):
+                            requete.append(i)
+          elif result and result3 :
+                print("(et), (dates)!")
+                print(texte)
+                dates=list(texte.replace("(","").split(","))[len(texte.split(","))-1]
+                dates=list(dates.strip().replace(")","").split(" "))[1]
+                dates=list(dates.split("-"))
+                texte = list(texte.split(", (dates "))[0]
+                texte = texte.replace(", ","(.*)")
+                texte = texte.replace(",","(.*)")
+                texte = texte.replace("(.*)(et)","")
+                texte = texte.replace("(.*) (et)","")
+                texte = texte.replace(" (et)","")
+                texte = texte.replace("(et)","")
+                print(texte)
+                regex = re.compile(texte)
+                for i in param :
+                        result = regex.search(str(i).lower())
+                        if result and i not in requete and i["date_deb"]>=int(dates[0].strip()) and i["date_fin"]<=int(dates[1].strip()):
+                            requete.append(i)
+          else :
+              print(texte)
+              texte=list(texte.split(","))
+              for e in texte :
+                for i in param :
+                    for key, value in i.items():
+                        e = e.lower().strip()
+                        regex = re.compile(e)
+                        result = regex.search(str(value).lower())
+                        if result :
+                            #if key != i["title"] and value != i["title"] and key != i["label"] and value != i["label"] :
+                                if i not in requete :
+                                    requete.append(i)
+          
+        else :
+          for i in param :
+              for key, value in i.items():
+                  pattern = texte.lower().strip()
+                  regex = re.compile(pattern)
+                  result = regex.search(str(value).lower())
+                  if result :
+                      #if key != i["title"] and value != i["title"] and key != i["label"] and value != i["label"] :
+                          if i not in requete :
+                              requete.append(i)
+
+        #if len(requete) > 200 :
+            #requete=requete[:200]
+
+        return requete
