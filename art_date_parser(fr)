@@ -1,3 +1,6 @@
+#Script pour convertir une datation telle qu'elle peut être donnée pour un objet patrimonial, en deux données numériques, une date de début et une date de fin.
+#Les regex sont à personnaliser en fonction du besoin
+
 def date_sec(date) :
     date2=0
     date=str(date).replace("Entre ", "").replace(" et ", "-")
