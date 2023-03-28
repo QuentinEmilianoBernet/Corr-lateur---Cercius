@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<meta charset="utf-8">
+<head>
+
+<link href="https://unpkg.com/leaflet-search@3.0.2/dist/leaflet-search.src.css" rel="stylesheet">
+<link href = "https://code.jquery.com/ui/1.10.4/themes/ui-lightness/jquery-ui.css" rel = “stylesheet”>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet@1.5.1/dist/leaflet.css" />
+<link href="https://unpkg.com/nouislider@15.5.1/dist/nouislider.css" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet-timedimension@1.1.1/dist/leaflet.timedimension.control.min.css" />
+<link rel="stylesheet" href="http://127.0.0.1:5000/result.css" />
+<link rel="shortcut icon" href="corr_icon.png">
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Jost&family=Quicksand&display=swap');
+</style> 
+<title>{{titre | safe }}</title>
+
+
+</head>
+
+<body>
+<header> <div id="header">
+<h1><a href ="http://127.0.0.1:5000/"> Corrélateur - {{titre | safe }}</a></h1>
+<form action = "http://127.0.0.1:5000/corrélateur" enctype="multipart/form-data" method = "POST" id="requête">
+<p><input placeholder=" Entrez votre requête..." name="input" id="input"/>
+<input type = "submit" name = "input" value = " Soumettre " id="soumettre"/></p> 
+</form>
+<div id="slider-compart"></div>
+<div id="slider"></div>
+<div id="netgraph_menu"><button id="villes" onclick="buttons(villes, this)" >Villes</button><button id="artistes" onclick="buttons(artistes, this)">Artistes</button><button id="descripteurs">Descripteurs</button></div></div>
+</header>
+<br>
+
+<section>
+{{contenu | safe }}
+</section>
+
+
+<script src="https://unpkg.com/vis-network@9.1.2/dist/vis-network.js"></script> 
+<script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js" integrity="sha512-XQoYMqMTK8LvdxXYG3nZ448hOEQiglfqkJs1NOQV44cWnUrBc8PkAOcXy20w0vlaXaVUearIOBhiXZ5V3ynxwA==" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/jquery@3.6.1/dist/jquery.js"></script>
+<script src="https://unpkg.com/nouislider@15.5.1/dist/nouislider.js"></script>
+<script src="https://unpkg.com/wnumb@1.2.0/wNumb.js"></script>
+<script src="https://unpkg.com/leaflet-search@3.0.2/dist/leaflet-search.src.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.4.1/gsap.min.js"></script>
+<script src="https://unpkg.com/leaflet.heat@0.2.0/dist/leaflet-heat.js"></script>
+<script src="https://unpkg.com/nouislider@15.5.1/dist/nouislider.js"></script>
+<script src="http://127.0.0.1:5000/tiff.js"></script>
+
+
+{{script | safe }}
+
+<script>
+
+    function populate (dict,but){
+    
+    var button = but
+    button.style.color = "inherit";
+    button.style.border = "0.3vh solid blanchedalmond";
+    
+    for (i in dict) {
+    if (dict[i] != input) {
+        nodes.add(
+                {
+                  id: dict[i],
+                  label: dict[i],
+                  title: dict[i],
+                  descri:dict[i],
+                  value: 4,
+                  group: 1,
+                  color:{highlight:'grey', border: 'indigo', background:'#9B93BD'},
+                  physics: true,
+                  mass: 5,
+                  borderWidth: 1,
+                  x: 0,
+                  y: 0,
+                })
+
+}}
+    
+    netw.setData(data); };
+    
+    function de_populate(dict, but){
+    
+    var button = but
+    button.style.color = "#403945"
+    button.style.border = "0.3vh solid #403945";
+    
+    for (i in dict){
+        nodes.remove({
+                  id: dict[i],
+                  label: dict[i],
+                  title: dict[i],
+                  descri:dict[i],
+                  value: 4,
+                  group: 1,
+                  color:{highlight:'grey', border: 'indigo', background:'#9B93BD'},
+                  physics: true,
+                  mass: 5,
+                  borderWidth: 1,
+                  x: 0,
+                  y: 0,
+                })
+
+    }netw.setData(data);
+
+};
+    
+    function buttons(dict, but) {
+        var button = but
+        if(button.style.color === "inherit") {de_populate(dict,but)} else {populate(dict,but)}
+        netw.once('beforeDrawing', function(e) {
+        netw.focus(input,{
+      scale:0.14,
+      });   });
+    };
+  
+
+// Affiche l'écran de chargement au démarrage
+document.getElementById('loadingScreen').style.display = 'block';
+
+// Création de la fonction de callback qui sera exécutée une fois que le netgraph est chargé
+function onNetgraphLoaded() {
+        // Cache l'écran de chargement une fois que le netgraph est chargé
+        document.getElementById('loadingScreen').style.display = 'none';
+        // Affiche le netgraph
+        document.getElementById('mynetwork').style.display = 'flex';
+        }
+
+// Appelle la fonction de callback une fois que le netgraph est chargé
+// Remplacez "myNetgraph" par le nom de votre variable contenant votre netgraph
+netw.on("afterDrawing", onNetgraphLoaded);
+    
+    
+    </script>
+</body>

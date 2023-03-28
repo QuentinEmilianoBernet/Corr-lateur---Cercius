@@ -1,0 +1,265 @@
+body {
+    background-color: #1f1c20;
+    background-repeat: no-repeat;
+    width: 100%;
+    right:0px;
+    color:beige;
+    font-size:  1.8vh;
+    overflow-x: hidden;
+}  
+
+img {border-radius: 9px;}
+
+a{
+
+color:beige;
+text-decoration:none;
+}
+
+#netgraph {
+display:flex;
+width:auto;
+}
+
+#map {
+    display:flex;
+    margin-top: 9vh;
+    margin-right:2vh;
+    margin-left:1vh;
+    width: 70vh;
+    height: 70vh;
+    background-color: #111111;
+    color: blanchedalmond;
+    z-index:5;
+    border-radius: 30px;
+  }
+
+#loadingScreen{
+z-index:10;
+margin-left:24vh;
+margin-top:40vh;
+font-family: 'Quicksand', sans-serif;
+font-size: 2.5vh;
+}
+
+#slider-compart {
+position:absolute;
+display:flex;
+}
+
+#slider {
+margin-top: 2.4vh;
+margin-left: 76vh;
+position:absolute;
+width: 53vh;
+background-color:#121113;
+}
+
+.noUi-handle {
+  border: 1px solid blanchedalmond;
+  margin-top : -0.65vh;
+  border-radius: 100px;
+  background: #121113;
+  cursor: default;
+  box-shadow: inset 0 0 1px #121113, inset 0 1px 7px #121113, 0 3px 6px -3px #121113;
+}
+
+.noUi-horizontal {
+    position:absolute;
+    height: 5px;
+    border:none;
+    box-shadow:none;
+}
+
+.noUi-connect {
+    position:absolute;
+    background: blanchedalmond;
+    height: 3px;
+}
+
+.noUi-tooltip{
+    font-family:'Quicksand', sans-serif;
+    font-size: 3.3vh;
+    background: none;
+    border: none;
+    color: blanchedalmond;}
+
+
+#mynetwork {
+    position: absolute;
+    display:flex;
+    margin-top: 9vh;
+    margin-right:2vh;
+    margin-left:2vh;
+    width: 70vh;
+    height: 70vh;
+    font-family: 'Quicksand', sans-serif;
+    background-color: #121113;
+    color: blanchedalmond;
+    border-radius: 30px;
+  }
+  #optionsContainer {
+    height: 300px;
+    color:#121113;
+  }
+
+#input {
+display:flex;
+float:left;
+background: inherit;
+color:inherit;
+bottom: 0.5vh solid blanchedalmond;
+width: 50vh;
+height:4vh;
+padding:0 20px 0 2px;
+margin:4px 0 4px 4px;
+padding-left: 1vh;
+margin-left: 2vh;
+margin-bottom: 2vh;
+font-family: 'Quicksand', sans-serif;
+}
+
+button {
+color:inherit;
+margin-left: 0.5vh;
+margin-right: 0.5vh;
+float:left;
+background: inherit;
+border: 0.3vh solid blanchedalmond;
+height:4.4vh;
+padding:0 20px 0 2px;
+margin:4px 0 4px 4px;
+width: 12vh;
+text-align: center;
+padding-left: 1.1vh;
+font-family: 'Quicksand', sans-serif;
+z-index:11;
+}
+
+button:hover {
+background: rgb(70, 70, 70);
+}
+
+#netgraph_menu {
+position: fixed;
+right:20vh;
+z-index:11;
+}
+
+#soumettre {
+float:left;
+background: inherit;
+color:inherit;
+border: 0.3vh solid blanchedalmond;
+height:4.4vh;
+padding:0 20px 0 2px;
+margin:4px 0 4px 4px;
+color:inherit;
+width: 12vh;
+text-align: center;
+padding-left: 1.1vh;
+font-family: 'Quicksand', sans-serif;
+}
+
+#soumettre:hover {
+background: rgb(70, 70, 70);
+}
+
+#cartel {
+padding-top: 1vh;
+padding-left: 1vh;
+max-width: 30vh;
+font-family: 'Quicksand', sans-serif;
+}
+
+#resultats {
+display:flex;
+height: auto;
+margin-right: 2px;
+margin-bottom: 3vh;
+width: inherit;
+font-family: 'Quicksand', sans-serif;
+}
+
+title {
+height: auto;
+padding: 1.5vh;
+
+}
+
+#carrousel_prime {
+width: 42vh;
+display: flex;
+overflow-x: scroll;
+}
+#carrousel {
+width: 42vh;
+display: flex;
+overflow-x: scroll;
+}
+
+#resultat {
+    display:flex;
+    margin-top: 11vh;
+    margin-right:2vh;
+    margin-left:2vh;
+    font-family: 'Quicksand', sans-serif;
+    max-height: 80vh;
+}
+
+#resultat1 {
+display: block;
+margin-top: 9vh;
+margin-left: 2vh;
+max-width: 47vh;
+padding: 2vh;
+height: auto;
+border-radius: 12px;
+margin-right:2vh;
+background-color: #121113;
+
+}
+
+#resultat_indiv {
+display: block;
+
+}
+
+#compart {
+padding: 2vh;
+border-radius: 9px;
+margin-right:2vh;
+margin-left:2vh;
+background-color: #121113;
+}
+
+.vis-tooltip {
+  position: absolute;
+  visibility: visible;
+  width: 38vh;
+  z-index:9;
+  }
+
+
+#header {
+    position:fixed;
+    height: 19vh;
+    font-size: 2.5vh;
+    background-color: #121113;
+    top:0px;
+    left:0px;
+    right:0px;
+    z-index:10;
+}
+
+h1{
+    font-family: 'Jost', sans-serif;
+    margin-left: 3vh;
+    font-size: 4vh;
+  }
+
+
+  .leaflet-popup-content {
+font-family: 'Quicksand', sans-serif;
+font-size: 1.5vh;
+}
